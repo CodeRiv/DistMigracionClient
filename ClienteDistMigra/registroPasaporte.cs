@@ -161,17 +161,19 @@ namespace ClienteDistMigra
             string primerApellido = txtResApellido.Text;
             string segundoApellido = txtSegundoApellido.Text;
 
-            if (string.IsNullOrEmpty(tbOrnato.Text))
-            {
-                MessageBox.Show("Debe ingresar un número de boleto de ornato");
-            }
-            else
+            string ornato = tbOrnato.Text;
+
+            string result = ValidarBoleto(ornato);
+
+            if (result == "true")
             {
                 insertarDatabase(DPI, primerNombre, segundoNombre, primerApellido, segundoApellido);
 
             }
-
-
+            else
+            {
+                MessageBox.Show("Ingrese un número de boleto de ornato válido");
+            }
         }
 
         private void tbDPI_TextChanged(object sender, EventArgs e)
@@ -192,6 +194,46 @@ namespace ClienteDistMigra
             MenuInicial mi = new MenuInicial();
             mi.Show();
             this.Hide();
+        }
+
+        public string ValidarBoleto(string Ornato)
+        {
+            string URLdataBoleto = "https://muni-boleto.herokuapp.com/api/boleto/" + Ornato;
+            var datOrnato = "";
+
+
+            try
+            {
+                WebClient wcb = new WebClient();
+                datOrnato = wcb.DownloadString(URLdataBoleto);
+
+                var rs2 = JsonConvert.DeserializeObject<Muni>(datOrnato);
+
+                try
+                {
+                    if (rs2.data[0].estado == "Al dia")
+                    {
+                        return "true";
+                    }
+                    else
+                    {
+                        return "false";
+                    }
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("No existe dicho registro");
+                    return "false";
+                }
+
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
         }
     }
 }

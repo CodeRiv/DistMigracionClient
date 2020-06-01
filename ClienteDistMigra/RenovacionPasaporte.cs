@@ -119,13 +119,17 @@ namespace ClienteDistMigra
 
         private void btnRenovar_Click(object sender, EventArgs e)
         {
-            if (!String.IsNullOrWhiteSpace(tbOrnato.Text))
+            string ornato = tbOrnato.Text;
+
+            string result = ValidarBoleto(ornato);
+
+            if (result == "true")
             {
                 renovarPasaporte(DPI);
             }
             else
             {
-                MessageBox.Show("Por favor ingrese un número de ornato");
+                MessageBox.Show("Ingrese un número de boleto de ornato válido");
             }
         }
 
@@ -243,6 +247,46 @@ namespace ClienteDistMigra
             MenuInicial mi = new MenuInicial();
             mi.Show();
             this.Hide();
+        }
+
+        public string ValidarBoleto(string Ornato)
+        {
+            string URLdataBoleto = "https://muni-boleto.herokuapp.com/api/boleto/" + Ornato;
+            var datOrnato = "";
+
+
+            try
+            {
+                WebClient wcb = new WebClient();
+                datOrnato = wcb.DownloadString(URLdataBoleto);
+
+                var rs2 = JsonConvert.DeserializeObject<Muni>(datOrnato);
+
+                try
+                {
+                    if (rs2.data[0].estado == "Al dia")
+                    {
+                        return "true";
+                    }
+                    else
+                    {
+                        return "false";
+                    }
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("No existe dicho registro");
+                    return "false";
+                }
+
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
         }
     }
 }
